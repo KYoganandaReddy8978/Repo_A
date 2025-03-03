@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Repo Paths
-REPO_A_PATH="/Users/yoganandareddykanchisamudram/Documents/Repo_A"
-REPO_B_PATH="/Users/yoganandareddykanchisamudram/Documents/Repo_B"
-
-# Files to Copy
-FILTER_FILES=("src/main/java/HelloWorld.java")
+# Repo B details
+REPO_B_URL="https://github.com/KYoganandaReddy8978/Repo_B.git"
 BRANCH="main"
+TEMP_DIR="/tmp/repo_b"
+
+# Files to Copy (Add your files here)
+FILTER_FILES=("src/main/java/HelloWorld.java")
 
 # Get Latest Commit Hash
 COMMIT_HASH=$(git rev-parse HEAD)
@@ -27,18 +27,28 @@ if [ ${#COPY_FILES[@]} -eq 0 ]; then
   exit 0
 fi
 
-echo "Copying Files: ${COPY_FILES[*]}"
+echo "Files to Copy: ${COPY_FILES[*]}"
+
+# Clone Repo B into Temporary Directory
+if [ -d "$TEMP_DIR" ]; then
+  rm -rf "$TEMP_DIR"
+fi
+git clone "$REPO_B_URL" "$TEMP_DIR"
 
 # Copy Files to Repo B
 for file in "${COPY_FILES[@]}"; do
-  mkdir -p "$(dirname "$REPO_B_PATH/$file")"
-  cp "$REPO_A_PATH/$file" "$REPO_B_PATH/$file"
+  mkdir -p "$(dirname "$TEMP_DIR/$file")"
+  cp "$file" "$TEMP_DIR/$file"
   echo "Copied: $file"
 done
 
 # Commit and Push Changes to Repo B
-cd "$REPO_B_PATH" || exit
+cd "$TEMP_DIR" || exit
 git add "${COPY_FILES[@]}"
 git commit -m "Auto commit from $COMMIT_HASH"
 git push origin "$BRANCH"
-echo "Changes Pushed to Repo B!"
+
+echo "Changes pushed to Repo B!"
+
+# Clean up
+rm -rf "$TEMP_DIR"
